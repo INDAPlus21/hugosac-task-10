@@ -13,13 +13,47 @@ alive(Row, Column, BoardFileName):-
     seen,                   % Closes the io-stream
     check_alive(Row, Column, Board).
 
-% Check if a coordinate has already been visited
-% by checking if a list contains the coordinate.
-check_visited(Coord, [H|T]) :-
-    Coord = Head ; check_visited(Coord, T).
 
 % Checks whether the group of stones connected to
 % the stone located at (Row, Column) is alive or dead.
 check_alive(Row, Column, Board):-
+    % Check that there is a stone in the given position.
     nth1_2d(Row, Column, Board, Stone),
-    (Stone = b; Stone = w).
+    (Stone = b; Stone = w),
+    check_empty(Row, Column, Board, Stone, []).
+
+% Check if a coordinate has already been visited
+% by checking if a list contains the coordinate.
+already_checked(Coord, [H | T]) :-
+    Coord = H ; already_checked(Coord, T).
+
+% Recursively checks through adjacent pieces in a group to
+% try to find an empty position. 
+check_empty(Row, Column, Board, Stone, CheckedList) :-
+    
+    % Get the stone color from the coordinate of the current stone.
+    nth1_2d(Row, Column, Board, CurrentStone),
+
+    % The current position is empty
+    (CurrentStone = e ; 
+        % Current stone has the same color as the group to search through.
+        (CurrentStone = Stone, 
+            % Coordinate has not been visited already.
+            \+ already_checked((Row, Column), CheckedList), 
+
+            % All four directions
+            RowUp is Row + 1,
+            RowDown is Row - 1,
+            ColLeft is Column - 1,
+            ColRight is Column + 1,
+            (
+                % Recursively check adjacent positions. Append the checked postions to
+                % the CheckedList.
+                check_empty(RowUp, Column, Board, Stone, [(Row, Column) | CheckedList]);
+                check_empty(RowDown, Column, Board, Stone, [(Row, Column) | CheckedList]);
+                check_empty(Row, ColLeft, Board, Stone, [(Row, Column) | CheckedList]);
+                check_empty(Row, ColRight, Board, Stone, [(Row, Column) | CheckedList])
+            )
+        )
+    ).
+
