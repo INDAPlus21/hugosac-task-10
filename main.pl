@@ -13,6 +13,11 @@ alive(Row, Column, BoardFileName):-
     seen,                   % Closes the io-stream
     check_alive(Row, Column, Board).
 
+% Check if a coordinate has already been visited
+% by checking if a list contains the coordinate.
+check_visited(Coord, [H|T]) :-
+    Coord = Head ; check_visited(Coord, T).
+
 % Checks whether the group of stones connected to
 % the stone located at (Row, Column) is alive or dead.
 check_alive(Row, Column, Board):-
